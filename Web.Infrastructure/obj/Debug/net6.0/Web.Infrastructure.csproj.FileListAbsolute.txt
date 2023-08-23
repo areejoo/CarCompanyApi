@@ -1,0 +1,17 @@
+C:\Users\asy76\source\repos\Web.Api\Web.Infrastructure\bin\Debug\net6.0\Web.Infrastructure.deps.json
+C:\Users\asy76\source\repos\Web.Api\Web.Infrastructure\bin\Debug\net6.0\Web.Infrastructure.runtimeconfig.json
+C:\Users\asy76\source\repos\Web.Api\Web.Infrastructure\bin\Debug\net6.0\Web.Infrastructure.dll
+C:\Users\asy76\source\repos\Web.Api\Web.Infrastructure\bin\Debug\net6.0\ref\Web.Infrastructure.dll
+C:\Users\asy76\source\repos\Web.Api\Web.Infrastructure\bin\Debug\net6.0\Web.Infrastructure.pdb
+C:\Users\asy76\source\repos\Web.Api\Web.Infrastructure\bin\Debug\net6.0\Web.Core.dll
+C:\Users\asy76\source\repos\Web.Api\Web.Infrastructure\bin\Debug\net6.0\Web.Core.pdb
+C:\Users\asy76\source\repos\Web.Api\Web.Infrastructure\obj\Debug\net6.0\Web.Infrastructure.csproj.AssemblyReference.cache
+C:\Users\asy76\source\repos\Web.Api\Web.Infrastructure\obj\Debug\net6.0\Web.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\asy76\source\repos\Web.Api\Web.Infrastructure\obj\Debug\net6.0\Web.Infrastructure.AssemblyInfoInputs.cache
+C:\Users\asy76\source\repos\Web.Api\Web.Infrastructure\obj\Debug\net6.0\Web.Infrastructure.AssemblyInfo.cs
+C:\Users\asy76\source\repos\Web.Api\Web.Infrastructure\obj\Debug\net6.0\Web.Infrastructure.csproj.CoreCompileInputs.cache
+C:\Users\asy76\source\repos\Web.Api\Web.Infrastructure\obj\Debug\net6.0\Web.Infrastructure.csproj.CopyComplete
+C:\Users\asy76\source\repos\Web.Api\Web.Infrastructure\obj\Debug\net6.0\Web.Infrastructure.dll
+C:\Users\asy76\source\repos\Web.Api\Web.Infrastructure\obj\Debug\net6.0\ref\Web.Infrastructure.dll
+C:\Users\asy76\source\repos\Web.Api\Web.Infrastructure\obj\Debug\net6.0\Web.Infrastructure.pdb
+C:\Users\asy76\source\repos\Web.Api\Web.Infrastructure\obj\Debug\net6.0\Web.Infrastructure.genruntimeconfig.cache

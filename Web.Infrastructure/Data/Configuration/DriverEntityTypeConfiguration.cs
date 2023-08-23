@@ -10,16 +10,19 @@ namespace Web.Infrastructure.Configuration
 {
 
 
-public class DriverEntityTypeConfiguration : IEntityTypeConfiguration<Driver>
-{
-    public void Configure(EntityTypeBuilder<Driver> builder)
+    public class DriverEntityTypeConfiguration : IEntityTypeConfiguration<Driver>
     {
-         builder
-            .Property(c => c.Name).IsRequired();
+        public void Configure(EntityTypeBuilder<Driver> builder)
+        {
+            builder
+               .Property(c => c.Name).IsRequired();
+            builder
+               .Property(c => c.Id)
+                .HasDefaultValueSql("NewID()");
 
 
-    
 
+
+        }
     }
-}
 }

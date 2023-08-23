@@ -11,14 +11,18 @@ namespace Web.Infrastructure.Configuration
 {
 
 
-public class CustomerEntityTypeConfiguration : IEntityTypeConfiguration<Customer>
-{
-    public void Configure(EntityTypeBuilder<Customer> builder)
+    public class CustomerEntityTypeConfiguration : IEntityTypeConfiguration<Customer>
     {
-         builder
-            .Property(c => c.Name).IsRequired();
+        public void Configure(EntityTypeBuilder<Customer> builder)
+        {
+            builder
+               .Property(c => c.Name).IsRequired();
+
+            builder
+               .Property(c => c.Id)
+                .HasDefaultValueSql("NewID()");
 
 
+        }
     }
-}
 }

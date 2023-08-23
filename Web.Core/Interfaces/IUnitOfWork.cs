@@ -9,6 +9,8 @@ namespace Web.Core.Interfaces
     public interface IUnitOfWork : IDisposable
     {
         ICarRepository Cars { get; }
+        ICustomerRepositry Customers { get; }
+        IDriverRepository Drivers { get; }
 
         int Save();
     }

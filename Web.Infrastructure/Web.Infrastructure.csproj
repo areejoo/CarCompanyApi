@@ -23,8 +23,4 @@
     <ProjectReference Include="..\Web.Core\Web.Core.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Data\" />
-  </ItemGroup>
-
 </Project>

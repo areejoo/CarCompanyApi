@@ -8,7 +8,7 @@ using Web.Api.Dtos.Incomming;
 using Web.Api.Dtos.Outcomming;
 using Microsoft.Extensions.Caching.Memory;
 using AutoMapper;
-using Microsoft.EntityFrameworkCore;
+using System.Data.Entity;
 using System;
 using web.api.Dtos.Incomming;
 
@@ -18,16 +18,13 @@ namespace web.Api.Controllers
     [Route("Api/[controller]")]
     public class CarController : Controller
     {
-        //private readonly IGenericRepository<Car> _carRepo;
+        
         private readonly IMapper _mapper;
-        //private readonly ILogger _logger;
         public readonly ICarService _carService;
 
         public CarController(IMapper mapper, ICarService cartService)
         {
-            //_carRepo = carRepo;
             _mapper = mapper;
-
             _carService = cartService;
 
         }
@@ -89,6 +86,10 @@ namespace web.Api.Controllers
 
             try
             {
+                if (createCarDto.Number <= 0) { 
+                
+                
+                }
                 query = _carService.GetCarsQueryable();
                 query = query.Where(c => c.Number == createCarDto.Number);
 
@@ -217,7 +218,7 @@ namespace web.Api.Controllers
                     break;
                 case "EngineCapacity_desc":
                     break;
-                case "CapacityEngine-asc":
+                case "CapacityEngineasc":
                     break;
                 case "Type_desc":
                     query = query.OrderByDescending(c => c.Type);

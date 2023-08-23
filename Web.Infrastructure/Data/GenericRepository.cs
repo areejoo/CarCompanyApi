@@ -43,10 +43,7 @@ namespace Web.Infrastructure.Data
 
         public async Task UpdateAsync(T entity)
         {
-            IQueryable inFiles = GetQueryable();
-            foreach (Car inFile in inFiles)
-                context.Entry<Car>(inFile).State = EntityState.Detached;
-
+           
 
             context.Update(entity);
            

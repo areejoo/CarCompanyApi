@@ -11,12 +11,17 @@ namespace Web.Infrastructure.Data
     {
         private readonly MyAppDbContext _dbContext;
         public ICarRepository Cars { get; }
+        public ICustomerRepositry Customers { get; }
+        public IDriverRepository Drivers { get; }
+
 
         public UnitOfWork(MyAppDbContext dbContext,
-                            ICarRepository carRepo)
+                            ICarRepository carRepo,ICustomerRepositry customerRepo,IDriverRepository driverRepository)
         {
             _dbContext = dbContext;
             Cars = carRepo;
+            Customers = customerRepo;
+            Drivers = driverRepository;
         }
 
         public int Save()

@@ -11,6 +11,7 @@ namespace Web.Core.Interfaces
         ICarRepository Cars { get; }
         ICustomerRepositry Customers { get; }
         IDriverRepository Drivers { get; }
+        IRentalRepository Rentals { get; }
 
         int Save();
     }

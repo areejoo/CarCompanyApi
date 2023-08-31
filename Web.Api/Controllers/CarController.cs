@@ -1,16 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore;
-using System.Collections.Generic;
-using Web.Core;
 using Web.Core.Entities;
 using Web.Core.Interfaces;
 using Web.Api.Dtos.Incomming;
 using Web.Api.Dtos.Outcomming;
-using Microsoft.Extensions.Caching.Memory;
 using AutoMapper;
-using System.Data.Entity;
+using Microsoft.EntityFrameworkCore;
 using System;
 using web.api.Dtos.Incomming;
+using Web.Api.Dtos.Incomming.DriverDto;
+using System.Collections;
 
 namespace web.Api.Controllers
 {
@@ -18,7 +16,7 @@ namespace web.Api.Controllers
     [Route("Api/[controller]")]
     public class CarController : Controller
     {
-        
+
         private readonly IMapper _mapper;
         public readonly ICarService _carService;
 
@@ -83,12 +81,13 @@ namespace web.Api.Controllers
             }
             CarDto carDto = null;
             IQueryable<Car> query = null;
-
+         
             try
             {
-                if (createCarDto.Number <= 0) { 
-                
-                
+                if (createCarDto.Number<=0)
+                {
+                    return BadRequest("number of car is  required");
+
                 }
                 query = _carService.GetCarsQueryable();
                 query = query.Where(c => c.Number == createCarDto.Number);
@@ -101,13 +100,17 @@ namespace web.Api.Controllers
                     if (result1)
                         carDto = _mapper.Map<CarDto>(carEntity);
                 }
+                else
+                {
+                    return BadRequest("number is reserved by another car");
+                }
 
             }
             catch (Exception e)
             {
 
             }
-            return Ok();
+            return Ok("Done");
 
 
         }
@@ -120,39 +123,50 @@ namespace web.Api.Controllers
             {
                 return new BadRequestObjectResult(ModelState);
             }
-            //var carExists=await _carService.GetCarByIdAsync(updateCarDto.Id);
-            CarDto carDto = null;
+            if (updateCarDto.Id == null || updateCarDto.Id==Guid.Empty)
+                return BadRequest("id is required");
+
+
+            var carEntity = await _carService.GetCarByIdAsync(updateCarDto.Id);
             IQueryable<Car> query = null;
-            Car carEntity = null;
             bool result1 = false;
-         
+
             try
             {
-                if (updateCarDto.Number > 0)
+                if (carEntity != null)
                 {
-                    query = _carService.GetCarsQueryable();
-
-                  
-                    query = query.Where(c => c.Number == updateCarDto.Number);
-
-                    //car with this number isnt found
-                    if (query.Count() == 0)
+                    if (updateCarDto.Number != null)
                     {
-                        carEntity = _mapper.Map<Car>(updateCarDto);
-                        result1 = await _carService.UpdateCarAsync(carEntity);
-                        if (result1)
-                            carDto = _mapper.Map<CarDto>(carEntity);
-
+                        query = _carService.GetCarsQueryable();
+                        query = query.Where(c => c.Number == updateCarDto.Number);
+                        //car with this number isnt found
+                        if (query.Count() == 0)
+                        {
+                            carEntity.Number = (int)(updateCarDto.Number);
+                        }
+                        else
+                        {
+                            return BadRequest("number of car is reserved by another car");
+                        }
                     }
-                    else { }
-                }//if 
-                else
-                {
-                    carEntity = _mapper.Map<Car>(updateCarDto);
+                    carEntity.DriverId = updateCarDto.DriverId != null ? updateCarDto.DriverId : carEntity.DriverId;
+                    carEntity.Color = updateCarDto.Color != null ? updateCarDto.Color : carEntity.Color;
+                    carEntity.Type = updateCarDto.Type != null ? updateCarDto.Type : carEntity.Type;
+                    carEntity.WithDriver = updateCarDto.DriverId != null ? true : false;
+                    carEntity.IsAvailable = (bool)(updateCarDto.IsAvailabe != null ? updateCarDto.IsAvailabe : carEntity.IsAvailable);
+
+                    //carEntity = _mapper.Map<Car>(updateCarDto);
                     result1 = await _carService.UpdateCarAsync(carEntity);
                     if (result1)
-                        carDto = _mapper.Map<CarDto>(carEntity);
+                        return Ok("done");
+                    else
+                        return BadRequest("error in update");
 
+                }
+
+                else
+                {
+                    return BadRequest("car is not found");
                 }
 
             }
@@ -161,9 +175,10 @@ namespace web.Api.Controllers
                 //_logger.LogInformation(e.ToString());
             }
 
-
-
             return Ok();
+
+
+
         }
 
 
@@ -217,8 +232,10 @@ namespace web.Api.Controllers
                     query = query.OrderByDescending(c => c.Color);
                     break;
                 case "EngineCapacity_desc":
+                    query = query.OrderByDescending(c => c.EngineCapacity);
                     break;
-                case "CapacityEngineasc":
+                case "CapacityEngine_asc":
+                    query = query.OrderBy(c => c.Type);
                     break;
                 case "Type_desc":
                     query = query.OrderByDescending(c => c.Type);

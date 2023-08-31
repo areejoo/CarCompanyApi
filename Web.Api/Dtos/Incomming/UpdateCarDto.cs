@@ -21,6 +21,7 @@ namespace web.api.Dtos.Incomming
 
 
         public double? DailyFare { get; set; }
+        public bool? IsAvailabe { get; set; }
 
         public Guid? DriverId { get; set; }
 

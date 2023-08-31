@@ -11,7 +11,7 @@ C:\Users\asy76\source\repos\Web.Api\Web.Infrastructure\obj\Debug\net6.0\Web.Infr
 C:\Users\asy76\source\repos\Web.Api\Web.Infrastructure\obj\Debug\net6.0\Web.Infrastructure.csproj.CoreCompileInputs.cache
 C:\Users\asy76\source\repos\Web.Api\Web.Infrastructure\obj\Debug\net6.0\Web.Infrastructure.csproj.CopyComplete
 C:\Users\asy76\source\repos\Web.Api\Web.Infrastructure\obj\Debug\net6.0\Web.Infrastructure.dll
-C:\Users\asy76\source\repos\Web.Api\Web.Infrastructure\obj\Debug\net6.0\ref\Web.Infrastructure.dll
+C:\Users\asy76\source\repos\Web.Api\Web.Infrastructure\obj\Debug\net6.0\refint\Web.Infrastructure.dll
 C:\Users\asy76\source\repos\Web.Api\Web.Infrastructure\obj\Debug\net6.0\Web.Infrastructure.pdb
 C:\Users\asy76\source\repos\Web.Api\Web.Infrastructure\obj\Debug\net6.0\Web.Infrastructure.genruntimeconfig.cache
-C:\Users\asy76\source\repos\Web.Api\Web.Infrastructure\obj\Debug\net6.0\refint\Web.Infrastructure.dll
+C:\Users\asy76\source\repos\Web.Api\Web.Infrastructure\obj\Debug\net6.0\ref\Web.Infrastructure.dll

@@ -80,29 +80,33 @@ namespace Web.Api.Controllers
 
             try
             {
-                if (driverDto.Name == null)
+                if (createDriverDto.Name == null)
                 {
-
+                    return BadRequest("name of driver is requird");
 
                 }
-                query = _driverService.GetDriversQueryable();
-                query = query.Where(c => c.Phone == createDriverDto.Phone);
-
-
-                if (query.Count() == 0)
+                if (createDriverDto.Phone != null)
                 {
-                    var driverEntity = _mapper.Map<Driver>(createDriverDto);
-                    var result1 = await _driverService.AddDriverAsync(driverEntity);
-                    if (result1)
-                        driverDto = _mapper.Map<DriverDto>(driverEntity);
+                    query = _driverService.GetDriversQueryable();
+                    query = query.Where(c => c.Phone == createDriverDto.Phone);
+
+                    if (query.Count() != 0)
+                    {
+                        return BadRequest("phone is reserved by another driver");
+                    }
                 }
+
+                var driverEntity = _mapper.Map<Driver>(createDriverDto);
+                var result1 = await _driverService.AddDriverAsync(driverEntity);
+                if (result1)
+                    return Ok("done");
 
             }
             catch (Exception e)
             {
 
             }
-            return Ok(); //customerDto
+            return Ok();
 
 
         }
@@ -116,42 +120,48 @@ namespace Web.Api.Controllers
             {
                 return new BadRequestObjectResult(ModelState);
             }
-            //var carExists=await _carService.GetCarByIdAsync(updateCarDto.Id);
             DriverDto driverDto = null;
             IQueryable<Driver> query = null;
             Driver driver = null;
+            if (updateDriverDto.Id == null || updateDriverDto.Id == Guid.Empty)
+                return BadRequest("id is required");
+
+
             bool result1 = false;
 
             try
             {
-                if (updateDriverDto.Id != null)
+                driver = await _driverService.GetDriverByIdAsync(updateDriverDto.Id);
+
+                if (driver != null)
                 {
-                    query =  _driverService.GetDriversQueryable();
 
-
-                    query = query.Where(c => c.Phone == updateDriverDto.Phone);
-
-                    //customer with this email isnt found
-                    if (query.Count() == 0)
+                    if (updateDriverDto.Phone != null)
                     {
-                        driver = _mapper.Map<Driver>(updateDriverDto);
+
+                        query = query.Where(c => c.Phone == updateDriverDto.Phone);
+
+                        //customer with this email isnt found
+                        if (query.Count() != 0)
+                        {
+                            return BadRequest("phone number is used by another driver");
+
+                        }
+                    }
+                        driver.Name = updateDriverDto != null ? updateDriverDto.Name : driver.Name;
+                        driver.Phone = updateDriverDto != null ? updateDriverDto.Phone : driver.Phone;
+                        driver.ReplacementDriverId = (updateDriverDto.ReplacementDriverId != null ? updateDriverDto.ReplacementDriverId : driver.ReplacementDriverId);
+                        driver.IsAvailable = (bool)(updateDriverDto.IsAvailable != null ? updateDriverDto.IsAvailable : driver.IsAvailable);
                         result1 = await _driverService.UpdateDriverAsync(driver);
                         if (result1)
                             driverDto = _mapper.Map<DriverDto>(driver);
 
                     }
-                    else { }
-                }//if 
-                else
-                {
-                    driver = _mapper.Map<Driver>(updateDriverDto);
-                    result1 = await _driverService.UpdateDriverAsync(driver);
-                    if (result1)
-                        driverDto = _mapper.Map<DriverDto>(driver);
+                    else
+
+                        return BadRequest("driver is not found");
 
                 }
-
-            }
             catch (Exception e)
             {
                 //_logger.LogInformation(e.ToString());
@@ -159,7 +169,7 @@ namespace Web.Api.Controllers
 
 
 
-            return Ok();
+            return Ok("updated successfuly");
         }
 
 

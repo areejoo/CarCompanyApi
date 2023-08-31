@@ -14,12 +14,13 @@ using web.api.Dtos.Incomming;
 using Web.Api.Dtos.Outcomming.CustomerDto;
 using Web.Api.Dtos.Incomming.CustomerDto;
 using Web.Infrastructure.Services;
+using System.Collections;
 
 namespace Web.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-   
+
     public class CustomerController : Controller
     {
         private readonly ICustomerService _customerService;
@@ -86,14 +87,16 @@ namespace Web.Api.Controllers
 
             try
             {
-                if (customerDto.Name ==null)
+                if (createCustomerDto.Name == null)
                 {
-
+                    return BadRequest("name of customer is required");
 
                 }
                 query = _customerService.GetCustomersQueryable();
-                query = query.Where(c => c.Email == createCustomerDto.Email);
-
+                if (createCustomerDto.Email != null)
+                {
+                    query = query.Where(c => c.Email == createCustomerDto.Email);
+                }
 
                 if (query.Count() == 0)
                 {
@@ -102,25 +105,34 @@ namespace Web.Api.Controllers
                     if (result1)
                         customerDto = _mapper.Map<CustomerDto>(customerEntity);
                 }
+                else
+                {
+                    return BadRequest("email is must be unique");
+                }
 
             }
             catch (Exception e)
             {
 
             }
-            return Ok(); //customerDto
+            return Ok("done"); //customerDto
 
 
         }
 
 
         [HttpPut("{id}")]
-
         public async Task<IActionResult> UpdateAsync([FromBody] UpdateCustomerDto updateCustomerDto)
         {
             if (!ModelState.IsValid)
             {
                 return new BadRequestObjectResult(ModelState);
+            }
+
+
+            if (updateCustomerDto.Id == null || updateCustomerDto.Id == Guid.Empty)
+            {
+                return BadRequest(" id is required");
             }
             //var carExists=await _carService.GetCarByIdAsync(updateCarDto.Id);
             CustomerDto customerDto = null;
@@ -130,42 +142,49 @@ namespace Web.Api.Controllers
 
             try
             {
-                if (updateCustomerDto.Id !=null)
+                customer = await _customerService.GetCustomerByIdAsync(updateCustomerDto.Id);
+                if (customer != null)
                 {
-                    query = _customerService.GetCustomersQueryable();
-
-
-                    query = query.Where(c => c.Email == updateCustomerDto.Email);
-
-                    //customer with this email isnt found
-                    if (query.Count() == 0)
+                    customer.Address = updateCustomerDto.Address!=null? updateCustomerDto.Address:customer.Address;
+                    customer.Name = updateCustomerDto.Name!=null?updateCustomerDto.Name:customer.Name ;
+                    customer.Phone = updateCustomerDto.Phone != null ? updateCustomerDto.Phone : customer.Phone;
+                    if (updateCustomerDto.Email != null)
                     {
-                        customer = _mapper.Map<Customer>(updateCustomerDto);
-                        result1 = await _customerService.UpdateCustomerAsync(customer);
-                        if (result1)
-                            customerDto = _mapper.Map<CustomerDto>(customer);
+                        query = _customerService.GetCustomersQueryable();
+                        query = query.Where(c => c.Email == updateCustomerDto.Email);
+                        if (query.Count() != 0)
+                        {
+                            return BadRequest("email is reserved to another customer");
+
+                        }
+                        else {
+                            customer.Email = updateCustomerDto.Email;
+                        }
+
 
                     }
-                    else { }
-                }//if 
-                else
-                {
-                    customer = _mapper.Map<Customer>(updateCustomerDto);
+
                     result1 = await _customerService.UpdateCustomerAsync(customer);
                     if (result1)
+                    {
                         customerDto = _mapper.Map<CustomerDto>(customer);
-
+                    }
+                }
+                else
+                {
+                    return BadRequest(" customer is not found ");
                 }
 
+
             }
-            catch (Exception e)
+            catch (Exception ev)
             {
                 //_logger.LogInformation(e.ToString());
             }
 
 
 
-            return Ok();
+            return Ok("updated successfuly");
         }
 
 
@@ -227,7 +246,7 @@ namespace Web.Api.Controllers
                 case "Phone_asc":
                     query = query.OrderBy(c => c.Phone);
                     break;
-     
+
                 default:
                     query = query.OrderBy(c => c.Name);
                     break;
@@ -242,7 +261,7 @@ namespace Web.Api.Controllers
                                            || c.Email.Trim().Equals(request.Search)
                                            || c.Phone.Trim().Equals(request.Search)
                                            || c.Address.Trim().Equals(request.Search));
-                                           
+
             return query;
         }
 

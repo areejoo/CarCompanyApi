@@ -7,21 +7,23 @@ using Web.Core.Interfaces;
 
 namespace Web.Infrastructure.Data
 {
-    public class UnitOfWork:IUnitOfWork
+    public class UnitOfWork : IUnitOfWork
     {
         private readonly MyAppDbContext _dbContext;
         public ICarRepository Cars { get; }
         public ICustomerRepositry Customers { get; }
         public IDriverRepository Drivers { get; }
+        public IRentalRepository Rentals { get; }
 
 
         public UnitOfWork(MyAppDbContext dbContext,
-                            ICarRepository carRepo,ICustomerRepositry customerRepo,IDriverRepository driverRepository)
+                            ICarRepository carRepo, ICustomerRepositry customerRepo, IDriverRepository driverRepository, IRentalRepository rentalRepository)
         {
             _dbContext = dbContext;
             Cars = carRepo;
             Customers = customerRepo;
             Drivers = driverRepository;
+            Rentals = rentalRepository;
         }
 
         public int Save()

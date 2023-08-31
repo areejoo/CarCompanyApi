@@ -4,7 +4,7 @@ namespace Web.Api.Dtos.Incomming
     public class CreateCarDto
 
     {
-        [Required(ErrorMessage ="number is required")]
+        [Required(ErrorMessage = "number is required")]
         public int Number { get; set; }
 
         public double EngineCapacity { get; set; }
@@ -14,12 +14,13 @@ namespace Web.Api.Dtos.Incomming
         [StringLength(10)]
         public string Type { get; set; }
 
+        public bool? IsAvailabe { get; set; }
 
         public double DailyFare { get; set; }
 
         public Guid? DriverId { get; set; }
-        
-       
+
+
 
 
     }

@@ -25,6 +25,7 @@ namespace Web.Infrastructure.Services
             services.AddScoped<ICarRepository, CarRepository>();
             services.AddScoped<ICustomerRepositry, CustomerRepository>();
             services.AddScoped<IDriverRepository, DriverRepository>();
+            services.AddScoped<IRentalRepository, RenatalRepository>();
 
             return services;
         }

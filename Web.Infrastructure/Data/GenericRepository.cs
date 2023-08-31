@@ -44,8 +44,8 @@ namespace Web.Infrastructure.Data
         public async Task UpdateAsync(T entity)
         {
            
-
-            context.Update(entity);
+            
+             context.Update(entity);
            
         }
         public async Task DeleteAsync(Guid id)

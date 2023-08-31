@@ -8,20 +8,21 @@ using Web.Core.Interfaces;
 
 namespace Web.Infrastructure.Services
 {
-    public class CustomerService : ICustomerService
+    public class RentalService : IRentalService
     {
         public IUnitOfWork _unitOfWork;
-
-        public CustomerService(IUnitOfWork unitOfWork)
+        public RentalService(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
+
         }
 
-        public async Task<bool> AddCustomerAsync(Customer entity)
+        public async  Task<bool> AddRentalAsync(Rental entity)
         {
             if (entity != null)
             {
-                await _unitOfWork.Customers.AddAsync(entity);
+
+                await _unitOfWork.Rentals.AddAsync(entity);
                 var result = _unitOfWork.Save();
 
                 if (result > 0)
@@ -31,14 +32,14 @@ namespace Web.Infrastructure.Services
                 return false;
             }
             return false;
-
         }
 
-        public async Task<bool> DeleteCustomerAsync(Guid id)
+        public  async Task<bool> DeleteRentalAsync(Guid id)
         {
-            if (id !=null){
-               await _unitOfWork.Customers.DeleteAsync(id);
-                var result =   _unitOfWork.Save();
+            if (id != Guid.Empty)
+            {
+                await _unitOfWork.Rentals.DeleteAsync(id);
+                var result = _unitOfWork.Save();
                 if (result > 0)
                 {
                     return true;
@@ -48,32 +49,30 @@ namespace Web.Infrastructure.Services
             return false;
         }
 
-        public  async Task<Customer> GetCustomerByIdAsync(Guid id)
+        public async  Task<Rental> GetRentalByIdAsync(Guid id)
         {
-            var customer = await _unitOfWork.Customers.GetByIdAsync(id);
-            if (customer != null)
+            var rental = await _unitOfWork.Rentals.GetByIdAsync(id);
+            if (rental != null)
             {
-                return customer;
+                return rental;
             }
             return null;
         }
 
-        public IQueryable<Customer> GetCustomersQueryable()
+        public IQueryable<Rental> GetrentalsQueryable()
         {
-            var customerDetailsList = _unitOfWork.Customers.GetQueryable();
-            return customerDetailsList;
-
+            var rentalDetailsList = _unitOfWork.Rentals.GetQueryable();
+            return rentalDetailsList;
         }
 
-        public async Task<bool> UpdateCustomerAsync(Customer entity)
+        public  async Task<bool> UpdateRentalAsync(Rental entity)
         {
             if (entity != null)
             {
-                var customer = await _unitOfWork.Customers.GetByIdAsync(entity.Id);
-                if (customer != null)
+                var driver = await _unitOfWork.Rentals.GetByIdAsync(entity.Id);
+                if (driver != null)
                 {
-                    
-                    await _unitOfWork.Customers.UpdateAsync(entity);
+                    await _unitOfWork.Rentals.UpdateAsync(entity);
 
                     var result = _unitOfWork.Save();
 
@@ -85,6 +84,5 @@ namespace Web.Infrastructure.Services
             }
             return false;
         }
-    
     }
 }

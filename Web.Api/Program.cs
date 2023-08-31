@@ -10,6 +10,7 @@ builder.Services.AddDIServices(builder.Configuration);
 builder.Services.AddScoped<ICarService, CarService>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<IDriverService, DriverService>();
+builder.Services.AddScoped<IRentalService, RentalService>();
 builder.Services.AddControllers();
 // Add services to the container.
 

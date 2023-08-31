@@ -21,6 +21,8 @@ namespace Web.Api.Dtos.Outcomming
         public bool WithDriver { get; set; }
 
         public Guid? DriverId { get; set; }
+        public bool? IsAvailabe { get; set; }
+
 
     }
 }

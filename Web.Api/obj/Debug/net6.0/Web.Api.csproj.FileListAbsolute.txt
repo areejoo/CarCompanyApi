@@ -99,3 +99,8 @@ C:\Users\asy76\source\repos\Web.Api\Web.Api\bin\Debug\net6.0\Web.Api.pdb
 C:\Users\asy76\source\repos\Web.Api\Web.Api\obj\Debug\net6.0\Web.Api.csproj.CopyComplete
 C:\Users\asy76\source\repos\Web.Api\Web.Api\obj\Debug\net6.0\Web.Api.genruntimeconfig.cache
 C:\Users\asy76\source\repos\Web.Api\Web.Api\obj\Debug\net6.0\ref\Web.Api.dll
+C:\Users\asy76\source\repos\Web.Api\Web.Api\bin\Debug\net6.0\IdentityModel.dll
+C:\Users\asy76\source\repos\Web.Api\Web.Api\bin\Debug\net6.0\IdentityServer4.dll
+C:\Users\asy76\source\repos\Web.Api\Web.Api\bin\Debug\net6.0\IdentityServer4.Storage.dll
+C:\Users\asy76\source\repos\Web.Api\Web.Api\bin\Debug\net6.0\Microsoft.AspNetCore.Authentication.OpenIdConnect.dll
+C:\Users\asy76\source\repos\Web.Api\Web.Api\bin\Debug\net6.0\Newtonsoft.Json.dll

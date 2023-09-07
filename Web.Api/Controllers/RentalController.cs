@@ -1,15 +1,11 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Web.Api.Dtos.Incomming;
-using Web.Api.Dtos.Incomming.CustomerDto;
 using Web.Api.Dtos.Incomming.RentalDto;
-using Web.Api.Dtos.Outcomming;
-using Web.Api.Dtos.Outcomming.CustomerDto;
 using Web.Api.Dtos.Outcomming.RentalDto;
 using Web.Core.Entities;
 using Web.Core.Interfaces;
-using Web.Infrastructure.Services;
+using Web.Api.Responces;
 
 namespace Web.Api.Controllers
 {
@@ -58,6 +54,23 @@ namespace Web.Api.Controllers
             //output
             var result = await query.ToListAsync();
             var resultDto = _mapper.Map<List<RentalDto>>(result);
+
+            foreach (var i in resultDto)
+            {
+                Driver driver = null;
+                var customer = await _customerService.GetCustomerByIdAsync(i.CustomerId);
+                i.CustomerName = customer.Name;
+                var car = await _carService.GetCarByIdAsync(i.CarId);
+                i.CarNumber = car.Number;
+
+                if (i.DriverId.HasValue)
+                {
+                    driver = await _driverService.GetDriverByIdAsync((Guid)i.DriverId);
+                    i.DriverName = driver.Name;
+
+                }
+
+            }
             RentalListDto carListDto = new RentalListDto() { RentalsPaginationList = resultDto, Count = count };
 
 
@@ -70,14 +83,26 @@ namespace Web.Api.Controllers
         public async Task<RentalDto> GetAsync(Guid id)
         {
             var rental = await _rentalService.GetRentalByIdAsync(id);
-
             var rentalDto = _mapper.Map<RentalDto>(rental);
+
+            Driver driver = null;
+            var customer = await _customerService.GetCustomerByIdAsync(rental.CustomerId);
+            rentalDto.CustomerName = customer.Name;
+
+            var car = await _carService.GetCarByIdAsync(rentalDto.CarId);
+            rentalDto.CarNumber = car.Number;
+
+            if (rental.DriverId.HasValue)
+            {
+                driver = await _driverService.GetDriverByIdAsync((Guid)rental.DriverId);
+                rentalDto.DriverName = driver.Name;
+
+            }
 
             return rentalDto;
         }
 
         [HttpPost]
-        //without returen replacment driver
         public async Task<IActionResult> CreateAsync([FromBody] CreateRentalDto createRentalDto)
         {
             if (!ModelState.IsValid)
@@ -85,188 +110,196 @@ namespace Web.Api.Controllers
                 return new BadRequestObjectResult(ModelState);
             }
             Rental rentalEntity = _mapper.Map<Rental>(createRentalDto);
+            DateTime startDate = DateTime.Now;
+            if (createRentalDto.RentTerm <= 0)
+            {
+                return BadRequest(new ApiResponse(400, $"rent term must be bigger than zero {createRentalDto.RentTerm}"));
+
+            }
+
+            if (createRentalDto.StartDate.HasValue)
+            {
+                startDate = (DateTime)createRentalDto.StartDate;
+            }
+
+            rentalEntity.StartDate = startDate;// startDate is  cuurent date
+
 
             if (createRentalDto.CarId != Guid.Empty)
             {
+                bool result = false;
                 var resultCarFound = await CheckCarAvaiableAsync(createRentalDto.CarId);
-                if (resultCarFound == 0)   //car not found
-                    return BadRequest("car not found");
-                else //car found
-                {
-                    var result = CheckCarAvaiableByDateAsync(createRentalDto.CarId, createRentalDto.StartDate, createRentalDto.RentTerm);
-                    if (result == 0)
-                        return BadRequest("car is not availble in this date1");
-                }
+                if (!resultCarFound)   //car not found
+                    return NotFound(new ApiResponse(404, $"Car not found with id {createRentalDto.CarId}"));
+
+                //car found
+                result = CheckCarAvaiableByDateAsync(createRentalDto.CarId, startDate, createRentalDto.RentTerm, null);
+
+                if (!result)
+                    return BadRequest(new ApiResponse(400, $"car is not availble in this date {startDate}"));
+
+            }
+
+            else
+            {
+                return BadRequest(new ApiResponse(400, $"car is required"));
             }
 
             if (createRentalDto.CustomerId != Guid.Empty)
             {
                 var resultCustomerFound = await CheckCustomerAvaiableAsync(createRentalDto.CustomerId);
-                if (resultCustomerFound == 0)
-                    return BadRequest("customer not found");
+                if (!resultCustomerFound)
+                    return NotFound(new ApiResponse(404, $"Customer  not found with id {createRentalDto.CustomerId}"));
+            }
+            else
+            {
+                return BadRequest(new ApiResponse(400, $"Customer is required"));
             }
 
-            if (createRentalDto.DriverId != Guid.Empty)
 
+            if (createRentalDto.DriverId.HasValue)
             {
-                var resultDriverFound = await CheckDriverFoundAsync((Guid)createRentalDto.DriverId);
-                if (resultDriverFound == 0)//driver not found
+                Driver availableDriver = await getAvailbaleDriverAsync((Guid)createRentalDto.DriverId,startDate,createRentalDto.RentTerm);
+                if (availableDriver == null)//driver not found or not availble
                 {
-                    return BadRequest("Driver not found");
+                    return NotFound(new ApiResponse(404, $"driver not found or not availble with id  {createRentalDto.CarId}"));
 
                 }
-                else if (resultDriverFound == 2)//driver not available
-                {
-                    var replacmentDriver = await FindReplacmentDriver((Guid)createRentalDto.DriverId);
-                    if (replacmentDriver == null)
-                    {
-                        return BadRequest("no driver is availble in company ");
-                    }
-                    rentalEntity.DriverId = replacmentDriver.Id;
-                    replacmentDriver.IsAvailable = false;
-                    await _driverService.UpdateDriverAsync(replacmentDriver);
 
-                }
-                else // Driver available
-                {
-                    var driver = await _driverService.GetDriverByIdAsync((Guid)createRentalDto.DriverId);
-                    driver.IsAvailable = false;
-                    await _driverService.UpdateDriverAsync(driver);
-                }
+                rentalEntity.DriverId = availableDriver.Id;
+                availableDriver.IsAvailable = false;
+                await _driverService.UpdateDriverAsync(availableDriver);
 
             }//driver
 
-
-            if (createRentalDto.Total == 0) {
+            if (!createRentalDto.Total.HasValue)
+            {
                 var carRental = await _carService.GetCarByIdAsync(createRentalDto.CarId);
                 var total = createRentalDto.RentTerm * carRental.DailyFare;
                 rentalEntity.Total = total;
-            
+
             }
             var isAdded = await _rentalService.AddRentalAsync(rentalEntity);
             if (isAdded)
-                return Ok("done");
+                return Ok(new ApiResponse(200, $"added successfuly"));
 
-            return BadRequest("error in added");
-
+            return BadRequest(new ApiResponse(500, $"error in??????????????????????? "));
         }
 
-        private int CheckCarAvaiableByDateAsync(Guid carId, DateTime startDate, int rentTerm)
+        private bool CheckCarAvaiableByDateAsync(Guid carId, DateTime startDate, int rentTerm, Guid? rental)
         {
-            int result = 0;
+            bool result = false;
             var rentals = _rentalService.GetrentalsQueryable();
             rentals = rentals.Where(c => c.CarId == carId);
+
+            if (rental != null)
+            {
+                rentals = rentals.Where(c => c.Id != rental);
+            }
+
             if (rentals != null)//car in rental table
+                result = rentals.Any(c => c.StartDate.AddDays(c.RentTerm) >= startDate &&
+                 c.StartDate <= startDate.AddDays(rentTerm));
 
-                rentals = rentals.Where(c => c.StartDate.AddDays(c.RentTerm) >= startDate &&
-                c.StartDate <= startDate.AddDays(rentTerm));
-
-            if (rentals.Count() == 0)
-                result = 1;//car available in this date
-
+            result = (result == false) ? true : false;
             return result;
         }
+
+
         [HttpPut("{id}")]
-        ///////////////////////////////without returen replacment driver
-        public async Task<IActionResult>
-            UpdateAsync([FromBody] UpdateRenatlDto updateRenatlDto)
+        public async Task<IActionResult> UpdateAsync([FromBody] UpdateRenatlDto updateRenatlDto)
         {
             if (!ModelState.IsValid)
             {
                 return new BadRequestObjectResult(ModelState);
             }
-
             var rentalEntity = await _rentalService.GetRentalByIdAsync(updateRenatlDto.Id);
+
             if (rentalEntity == null)
-                return BadRequest("This rental is not found ");
-            if (updateRenatlDto.CarId != null)
+                return NotFound(new ApiResponse(404, $"this rental dosnt exists "));
+
+            DateTime startDate = (DateTime)(updateRenatlDto.StartDate.HasValue ? updateRenatlDto.StartDate : rentalEntity.StartDate);
+            int rentTerm = (int)(updateRenatlDto.RentTerm.HasValue ? updateRenatlDto.RentTerm : rentalEntity.RentTerm);
+            double total = (double)(updateRenatlDto.Total.HasValue ? updateRenatlDto.Total : rentalEntity.Total);
+            Guid carId = ((Guid)(updateRenatlDto.CarId.HasValue ? updateRenatlDto.CarId : rentalEntity.CarId));
+
+
+            if (updateRenatlDto.Total > 0)
             {
-                var resultCarFound = await CheckCarAvaiableAsync((Guid)updateRenatlDto.CarId);
-                if (resultCarFound == 0)
-                    return BadRequest("car not found");
-                else
-                {
-                    int result = 0;
-                    if (updateRenatlDto.StartDate != null)
-                    {
-                        result = CheckCarAvaiableByDateAsync((Guid)updateRenatlDto.CarId, (DateTime)updateRenatlDto.StartDate, (int)updateRenatlDto.RentTerm);
-                    }
-                    else
-                    {
-                        result = CheckCarAvaiableByDateAsync((Guid)updateRenatlDto.CarId, rentalEntity.StartDate, rentalEntity.RentTerm);
-                    }
-                    if (result == 0)
-                        return BadRequest("car is not availble in this date1");
-                }
-                rentalEntity.CarId = (Guid)updateRenatlDto.CarId;
-                rentalEntity.StartDate = (DateTime)updateRenatlDto.StartDate;
+                return BadRequest(new ApiResponse(404, $"{updateRenatlDto.Total} must be greater than zero"));
             }
 
-            if (updateRenatlDto.CustomerId != null)
+            var result = false;
+            if (updateRenatlDto.CarId.HasValue)
+            {
+                bool resultCarFound = await CheckCarAvaiableAsync((Guid)updateRenatlDto.CarId);
+                if (!resultCarFound)
+                    return NotFound(new ApiResponse(404, $" car is not found {updateRenatlDto.CarId} "));
+
+                result = CheckCarAvaiableByDateAsync((Guid)updateRenatlDto.CarId, startDate, rentTerm, updateRenatlDto.Id);
+
+                if (!result)
+                    return BadRequest(new ApiResponse(400, $"car is not availble in this date {startDate}"));
+
+                rentalEntity.CarId = carId;
+
+            }//car
+
+            if (updateRenatlDto.CustomerId.HasValue)
             {
                 var resultCustomerFound = await CheckCustomerAvaiableAsync((Guid)updateRenatlDto.CustomerId);
-                if (resultCustomerFound == 0)
-                    return BadRequest("customer not found");
+                if (!resultCustomerFound)
+                    return NotFound(new ApiResponse(404, $"customer not found {updateRenatlDto.CustomerId} "));
                 rentalEntity.CustomerId = (Guid)updateRenatlDto.CustomerId;
             }
 
             if (updateRenatlDto.DriverId != null)
-
             {
-                var resultDriverFound = await CheckDriverFoundAsync((Guid)updateRenatlDto.DriverId);
-                if (resultDriverFound == 0)
+                Driver availableDriver = await getAvailbaleDriverAsync((Guid)updateRenatlDto.DriverId,startDate,rentTerm);
+                if (availableDriver == null)
                 {
-                    return BadRequest("Driver not found");
-
+                    return NotFound(new ApiResponse(404, $"this driver not available {availableDriver.Name}  "));
                 }
-                else if (resultDriverFound == 2)//driver not available
+                else // driver availble  
                 {
-                    var replacmentDriver = await FindReplacmentDriver((Guid)updateRenatlDto.DriverId);
-                    if (replacmentDriver == null)
+                    if (rentalEntity.DriverId != null)
                     {
-                        return BadRequest("no driver is availble in company ");
+                        var oldDriver = await _driverService.GetDriverByIdAsync((Guid)rentalEntity.DriverId);
+                        oldDriver.IsAvailable = true;
+                        await _driverService.UpdateDriverAsync(oldDriver);
                     }
+
+                    availableDriver.IsAvailable = false;
+                    await _driverService.UpdateDriverAsync(availableDriver);
+
+                    rentalEntity.DriverId = availableDriver.Id;
                 }
-                else
-                {
-                    //driver availble
-                    var oldDriver = await _driverService.GetDriverByIdAsync((Guid)rentalEntity.DriverId);
-                    oldDriver.IsAvailable = true;
-                    await _driverService.UpdateDriverAsync(oldDriver);
-
-
-                    var driver = await _driverService.GetDriverByIdAsync((Guid)updateRenatlDto.DriverId);
-                    driver.IsAvailable = false;
-                    await _driverService.UpdateDriverAsync(driver);
-
-                    rentalEntity.DriverId = driver.Id;
-                }
-
             }//driver
+            rentalEntity.StartDate = startDate;
+            rentalEntity.RentTerm = rentTerm;
+            rentalEntity.Total = total;
 
-            if (updateRenatlDto.StartDate != null)
+            if (updateRenatlDto.RentTerm.HasValue)//check car if available after rentterm is updated
             {
-                int result = 0;
-                if (updateRenatlDto.RentTerm != null)//found in request
-                    result = CheckCarAvaiableByDateAsync((Guid)rentalEntity.CarId, (DateTime)updateRenatlDto.StartDate, (int)updateRenatlDto.RentTerm);
-                else
-                    result = CheckCarAvaiableByDateAsync(rentalEntity.CarId, (DateTime)updateRenatlDto.StartDate, rentalEntity.RentTerm);
+                rentTerm = (int)updateRenatlDto.RentTerm;
+                bool result1 = CheckCarAvaiableByDateAsync(carId, startDate, rentTerm, updateRenatlDto.Id);
+                if (!result1)
+                {
+                    return BadRequest(new ApiResponse(400, $"car is not availble in this date {startDate}"));
+                }
+                if (!updateRenatlDto.Total.HasValue)
+                {
 
-                if (result == 1)
-                    rentalEntity.StartDate = (DateTime)updateRenatlDto.StartDate;
-                else
-                    return BadRequest("this date is not available ");
-
+                    var carRental = await _carService.GetCarByIdAsync(carId);
+                    total = (double)(updateRenatlDto.RentTerm * carRental.DailyFare);
+                    rentalEntity.Total = total;
+                }
             }
-
-            rentalEntity.RentTerm = (int)(updateRenatlDto.RentTerm != null ? updateRenatlDto.RentTerm : rentalEntity.RentTerm);
-
-            rentalEntity.Status = (Core.Enums.RentalStatus)((updateRenatlDto.Status != null) ? updateRenatlDto.Status : rentalEntity.Status);
             var isUpdated = await _rentalService.UpdateRentalAsync(rentalEntity);
             if (isUpdated)
-                return Ok("done");
+                return Ok(new ApiResponse(200, $"updated successfuly"));
 
-            return BadRequest("error in updated");
+            return BadRequest(new ApiResponse(403, $" error updated "));
 
         }
 
@@ -283,12 +316,12 @@ namespace Web.Api.Controllers
             catch (Exception e)
             {
 
-                return BadRequest();
+                return BadRequest(new ApiResponse(400, $"excption {e}"));
             }
-            if (result)
-                return Ok();
-            else
-                return NotFound();
+            if (!result)
+           return NotFound(new ApiResponse(404, $"this rental dosnt exists "));
+
+            return Ok(new ApiResponse(200,"deleted succcessfuly"));
 
 
         }
@@ -318,15 +351,18 @@ namespace Web.Api.Controllers
             Driver driver = null;
             var driverById = await _driverService.GetDriverByIdAsync(driverId);
             var replacmentDriver = await _driverService.GetDriverByIdAsync((Guid)driverById.ReplacementDriverId);
-            if (replacmentDriver.IsAvailable == true)//replacment`Driver is available
+            if (replacmentDriver != null)
             {
-                driver = replacmentDriver;
-            }
+                if (replacmentDriver.IsAvailable == true)//replacment Driver is available
+                {
+                    driver = replacmentDriver;
+                }
 
-            else
-            {
-                driver = replacmentDriver.ReplacementDriverId != null ? await FindReplacmentDriver((Guid)replacmentDriver.ReplacementDriverId) : null;
+                else
+                {
+                    driver = replacmentDriver.ReplacementDriverId != null ? await FindReplacmentDriver((Guid)replacmentDriver.ReplacementDriverId) : null;
 
+                }
             }
 
             if (driver != null)
@@ -337,29 +373,26 @@ namespace Web.Api.Controllers
             return driver;
         }
 
-        private async Task<int> CheckCustomerAvaiableAsync(Guid customerId)
+        private async Task<bool> CheckCustomerAvaiableAsync(Guid customerId)
         {
-            int result = 0;
+            bool result = false;
             var customer = await _customerService.GetCustomerByIdAsync(customerId);
 
-
             if (customer != null)
-                result = 1;
+                result = true;
 
             return result;
-
         }
 
-        private async Task<int> CheckCarAvaiableAsync(Guid carId)
+        private async Task<bool> CheckCarAvaiableAsync(Guid carId)
         {
-            int result = 0;
+            bool result = false;
             var car = await _carService.GetCarByIdAsync(carId);
             if (car != null)
             {
-                result = 1;
+                result = true;
             }
             return result;
-
 
         }
 
@@ -409,6 +442,32 @@ namespace Web.Api.Controllers
                                           );
 
             return query;
+        }
+        private async Task<Driver> getAvailbaleDriverAsync(Guid driverId,DateTime startDate, int rentTerm)
+        {
+            var driver = await _driverService.GetDriverByIdAsync(driverId);
+            Driver availableDriver = null;
+            bool result = false;
+            var rentals = _rentalService.GetrentalsQueryable();
+
+            if (driver != null)
+            {
+                if (rentals != null)//
+                { rentals = rentals.Where(c => c.DriverId == driverId);
+                    result = rentals.Any(c => c.StartDate.AddDays(c.RentTerm) >= startDate &&
+                     c.StartDate <= startDate.AddDays(rentTerm));
+                }
+                if (driver.IsAvailable && !result)
+                {
+                    return driver;
+                }
+                if (driver.ReplacementDriverId != null)
+                {
+                    availableDriver = await getAvailbaleDriverAsync((Guid)driver.ReplacementDriverId,startDate,rentTerm);
+                }
+                return availableDriver;
+            }
+            return driver;
         }
     }
 }

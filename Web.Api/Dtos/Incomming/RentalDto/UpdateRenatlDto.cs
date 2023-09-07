@@ -12,7 +12,7 @@ namespace Web.Api.Dtos.Incomming.RentalDto
 
         public Guid? DriverId { get; set; }
 
-        public RentalStatus? Status { get; set; }
+        //public RentalStatus? Status { get; set; }
 
         public DateTime? StartDate { get; set; }
         

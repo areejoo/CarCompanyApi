@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Web.Api.Middleware;
 using Web.APi.Profilles;
 using Web.Core.Interfaces;
 using Web.Infrastructure.Data;
@@ -21,12 +22,17 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddAutoMapper(typeof(CarProfile));
 
 var app = builder.Build();
+//added by me
+
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    app.UseMiddleware<ErrorWrappingMiddleware>();
+
 }
 
 app.UseHttpsRedirection();

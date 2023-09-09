@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "ZAKxiOTt75tlPv8PbALTLwOBVP4fU5ExykulM/qWbJrZnamNCLnaia5X0J8sdBiVwGY+1ZsFeQ3JWFyEm6KGuA==",
+  "dgSpecHash": "h4m4WaB/mBjXGhH/w0paMHCIIJCru7i9Mhn3wmZFJdHnct97AvzXeIhK9cvd39OllpETU1a3QwejdvjWPuv0OA==",
   "success": true,
   "projectFilePath": "C:\\Users\\asy76\\source\\repos\\Web.Api\\Web.Infrastructure\\Web.Infrastructure.csproj",
   "expectedPackageFiles": [
@@ -27,6 +27,8 @@
     "C:\\Users\\asy76\\.nuget\\packages\\microsoft.extensions.dependencyinjection\\7.0.0\\microsoft.extensions.dependencyinjection.7.0.0.nupkg.sha512",
     "C:\\Users\\asy76\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\7.0.0\\microsoft.extensions.dependencyinjection.abstractions.7.0.0.nupkg.sha512",
     "C:\\Users\\asy76\\.nuget\\packages\\microsoft.extensions.dependencymodel\\7.0.0\\microsoft.extensions.dependencymodel.7.0.0.nupkg.sha512",
+    "C:\\Users\\asy76\\.nuget\\packages\\microsoft.extensions.fileproviders.abstractions\\7.0.0\\microsoft.extensions.fileproviders.abstractions.7.0.0.nupkg.sha512",
+    "C:\\Users\\asy76\\.nuget\\packages\\microsoft.extensions.hosting.abstractions\\7.0.0\\microsoft.extensions.hosting.abstractions.7.0.0.nupkg.sha512",
     "C:\\Users\\asy76\\.nuget\\packages\\microsoft.extensions.logging\\7.0.0\\microsoft.extensions.logging.7.0.0.nupkg.sha512",
     "C:\\Users\\asy76\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\7.0.0\\microsoft.extensions.logging.abstractions.7.0.0.nupkg.sha512",
     "C:\\Users\\asy76\\.nuget\\packages\\microsoft.extensions.options\\7.0.0\\microsoft.extensions.options.7.0.0.nupkg.sha512",

@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,6 +27,12 @@ namespace Web.Infrastructure.Services
             services.AddScoped<ICustomerRepositry, CustomerRepository>();
             services.AddScoped<IDriverRepository, DriverRepository>();
             services.AddScoped<IRentalRepository, RenatalRepository>();
+            //services.AddHostedService<CacheDatabaseSynchronizationService>();
+            //services.AddScoped<IHostedService>(provider => provider.GetService<CacheDatabaseSynchronizationService>());
+            //services.AddHostedService<CacheDatabaseSynchronizationService>();
+
+            services.AddHostedService<ConsumeScopedServiceHostedService>();
+            services.AddScoped<IScopedProcessingService, ScopedProcessingService>();
 
             return services;
         }

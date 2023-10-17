@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Azure.Core;
+using IdentityServer4.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
@@ -7,6 +8,7 @@ using Web.Api.Dtos.Incomming;
 using Web.Api.Dtos.Outcomming;
 using Web.Core.Entities;
 using Web.Core.Interfaces;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Web.Api.Controllers
 {
@@ -25,21 +27,19 @@ namespace Web.Api.Controllers
             _mapper = mapper;
         }
         [HttpGet]
-        public async Task<IActionResult> GetListAsync([FromQuery] CarRequestDto request)
+        public async Task<CarListDto> GetListAsync([FromQuery] CarRequestDto request)
         {
             var cacheKey = "carList";
             var count = 0;
-            List<Car> result = null;
-            //checks if cache entries exists
-
-            if (_memoryCache.TryGetValue("carList", out List<Car > re))
-            {
-                return Content("fh");
-
-            }
-
+            IQueryable<Car> result = null;
+            List<Car> result1 = null;
+            result1 = (List<Car>)_memoryCache.Get(cacheKey);
             //output
-            return BadRequest();
+            count = result1.Count();
+            var resultDto = _mapper.Map<List<CarDto>>(result1);
+            CarListDto carListDto = new CarListDto() { CarsPaginationList = resultDto, Count = count };
+
+            return carListDto;
         }
 
         private IQueryable<Car> FilterCar(IQueryable<Car> query, CarRequestDto request)

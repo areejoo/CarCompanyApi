@@ -104,3 +104,5 @@ C:\Users\asy76\source\repos\Web.Api\Web.Api\bin\Debug\net6.0\IdentityServer4.dll
 C:\Users\asy76\source\repos\Web.Api\Web.Api\bin\Debug\net6.0\IdentityServer4.Storage.dll
 C:\Users\asy76\source\repos\Web.Api\Web.Api\bin\Debug\net6.0\Microsoft.AspNetCore.Authentication.OpenIdConnect.dll
 C:\Users\asy76\source\repos\Web.Api\Web.Api\bin\Debug\net6.0\Newtonsoft.Json.dll
+C:\Users\asy76\source\repos\Web.Api\Web.Api\bin\Debug\net6.0\Microsoft.Extensions.FileProviders.Abstractions.dll
+C:\Users\asy76\source\repos\Web.Api\Web.Api\bin\Debug\net6.0\Microsoft.Extensions.Hosting.Abstractions.dll

@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Caching.Memory;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
 using System.Data.Entity;
@@ -8,28 +10,35 @@ using Web.Core.Interfaces;
 using Web.Infrastructure.Data;
 using Web.Infrastructure.Services;
 
-public class CacheDatabaseSynchronizationService : IHostedService
+public class CacheDatabaseSynchronizationService : BackgroundService
 {
     private readonly IMemoryCache _cache;
     private readonly ICarService _carService;
+    private readonly IServiceScopeFactory _scopeFactory;
 
 
-    public CacheDatabaseSynchronizationService(IMemoryCache cache,ICarService carService)
+
+    public CacheDatabaseSynchronizationService(IMemoryCache cache,ICarService carService, IServiceScopeFactory scopeFactory)
     {
         _cache = cache;
         _carService = carService;
+        _scopeFactory = scopeFactory;
     }
-
-    public async Task StartAsync(CancellationToken cancellationToken)
+    public void DoWork()
     {
-
-        int i = 0;
-        
+        using (var scope = _scopeFactory.CreateScope())
+        {
+            var s = scope.ServiceProvider.GetRequiredService<CarService>();
+            
+        }
     }
 
-    public Task StopAsync(CancellationToken cancellationToken)
+  
+
+    protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        // Cleanup or perform any necessary actions when the application is shutting down
-        return Task.CompletedTask;
+        throw new NotImplementedException();
     }
+
+   
 }
